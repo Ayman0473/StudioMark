@@ -61,3 +61,14 @@ export interface GeneratedAiImage {
   timestamp: number;
   type: 'nano-created' | 'nano-edited' | 'pro-generated';
 }
+
+export interface SavedPlacementPreset {
+  id: string;
+  name: string;
+  xOffset: number;
+  yOffset: number;
+  scale: number;
+  rotation: number;
+  isBuiltIn?: boolean;
+  createdAt: number;
+}
