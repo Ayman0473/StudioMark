@@ -1,0 +1,6 @@
+{
+  "name": "StudioMark: High-Res Logo Mockups & AI Scene Studio",
+  "description": "Upload your brand logo and preview on realistic mugs, t-shirts, hoodies, and tote bags. Generate and edit high-resolution 1K, 2K, and 4K product scenes using Gemini AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
