@@ -195,6 +195,7 @@ export default function App() {
 
                 <ControlsPanel
                   currentMockup={currentMockup}
+                  currentLogo={currentLogo}
                   config={config}
                   onChangeConfig={updateLive}
                   onCommitConfig={pushState}

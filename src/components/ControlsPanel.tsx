@@ -23,9 +23,11 @@ import {
   ProductFinish,
   SavedPlacementPreset,
 } from '../types/mockup';
+import { PresetThumbnail } from './PresetThumbnail';
 
 interface ControlsPanelProps {
   currentMockup: MockupProduct;
+  currentLogo: string | null;
   config: PlacementConfig;
   onChangeConfig: (newConfig: PlacementConfig) => void;
   onCommitConfig?: (newConfig: PlacementConfig) => void;
@@ -85,6 +87,7 @@ const DEFAULT_PRESETS: SavedPlacementPreset[] = [
 
 export const ControlsPanel: React.FC<ControlsPanelProps> = ({
   currentMockup,
+  currentLogo,
   config,
   onChangeConfig,
   onCommitConfig,
@@ -255,7 +258,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
         </div>
       </div>
 
-      {/* Saved Placement Presets Section */}
+      {/* Saved Placement Presets Section with Low-Resolution Thumbnail Previews */}
       <div className="space-y-3 pt-2 border-t border-slate-800/80">
         <div className="flex items-center justify-between">
           <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
@@ -283,17 +286,27 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
           </button>
         </div>
 
-        {/* Inline Save Preset Form */}
+        {/* Inline Save Preset Form with Thumbnail Preview */}
         {isCreatingPreset && (
           <form
             onSubmit={handleSaveCurrentPreset}
-            className="p-2.5 bg-slate-900 border border-blue-500/40 rounded-xl space-y-2 animate-in fade-in duration-150"
+            className="p-3 bg-slate-900 border border-blue-500/40 rounded-xl space-y-2.5 animate-in fade-in duration-150"
           >
-            <div className="flex items-center justify-between text-[11px] text-slate-400">
-              <span>Save current position &amp; scale:</span>
-              <span className="font-mono text-blue-400 tabular-nums">
-                {config.scale}% · X:{config.xOffset}% · Y:{config.yOffset}%
-              </span>
+            <div className="flex items-center gap-2.5">
+              <div className="w-12 h-12 rounded-lg overflow-hidden border border-slate-700 bg-slate-950 shrink-0">
+                <PresetThumbnail
+                  mockup={currentMockup}
+                  logoSrc={currentLogo}
+                  preset={config}
+                  className="w-full h-full"
+                />
+              </div>
+              <div className="flex-1 min-w-0 text-xs">
+                <p className="font-semibold text-slate-200 truncate">Save Current Placement</p>
+                <p className="text-[11px] font-mono text-blue-400 tabular-nums mt-0.5">
+                  {config.scale}% size · X:{config.xOffset}% · Y:{config.yOffset}%{config.rotation !== 0 ? ` · ${config.rotation}°` : ''}
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-1.5">
               <input
@@ -304,12 +317,12 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
                 onKeyDown={(e) => {
                   if (e.key === 'Escape') setIsCreatingPreset(false);
                 }}
-                placeholder="Preset name (e.g. Left Pocket, Oversized)..."
+                placeholder="Preset name (e.g. Front Pocket, Oversized)..."
                 className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-blue-500"
               />
               <button
                 type="submit"
-                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-colors shrink-0"
+                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-colors shrink-0 shadow-sm"
               >
                 Save
               </button>
@@ -317,8 +330,8 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
           </form>
         )}
 
-        {/* Preset Cards / Chips */}
-        <div className="grid grid-cols-2 gap-2">
+        {/* Preset Cards Grid with Low-Res Thumbnail Previews */}
+        <div className="grid grid-cols-2 gap-2.5">
           {allPresets.map((preset) => {
             const active = isPresetActive(preset);
             const isJustSaved = justSavedId === preset.id;
@@ -333,42 +346,52 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
                     handleLoadPreset(preset);
                   }
                 }}
-                className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer relative group flex flex-col justify-between ${
+                className={`p-2 rounded-xl border text-left transition-all cursor-pointer relative group flex flex-col justify-between overflow-hidden ${
                   active
-                    ? 'bg-blue-600/15 border-blue-500 text-white ring-1 ring-blue-500/40'
+                    ? 'bg-blue-600/15 border-blue-500 text-white ring-1 ring-blue-500/40 shadow-sm'
                     : isJustSaved
                     ? 'bg-emerald-950/30 border-emerald-500 text-emerald-200'
                     : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-900'
                 }`}
               >
-                <div className="flex items-center justify-between gap-1">
-                  <div className="flex items-center gap-1 min-w-0">
-                    {active ? (
-                      <BookmarkCheck className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                    ) : (
-                      <Bookmark className="w-3 h-3 text-slate-500 shrink-0" />
-                    )}
-                    <span className="text-xs font-medium truncate leading-tight">
-                      {preset.name}
-                    </span>
-                  </div>
+                {/* Low-Resolution Thumbnail Preview */}
+                <div className="relative w-full h-20 rounded-lg overflow-hidden border border-slate-800/80 bg-slate-950 mb-1.5">
+                  <PresetThumbnail
+                    mockup={currentMockup}
+                    logoSrc={currentLogo}
+                    preset={preset}
+                    className="w-full h-full"
+                  />
 
-                  {/* Delete button only for custom presets */}
+                  {/* Active Indicator Badge */}
+                  {active && (
+                    <span className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-blue-600/90 backdrop-blur-xs text-white text-[10px] font-semibold flex items-center gap-1 shadow-sm">
+                      <BookmarkCheck className="w-3 h-3" />
+                      Active
+                    </span>
+                  )}
+
+                  {/* Delete button only for custom user presets */}
                   {!preset.isBuiltIn && (
                     <button
                       onClick={(e) => handleDeletePreset(preset.id, e)}
                       title="Delete preset"
-                      className="text-slate-500 hover:text-rose-400 opacity-60 group-hover:opacity-100 p-0.5 rounded transition-all shrink-0"
+                      className="absolute top-1.5 right-1.5 p-1 rounded-md bg-slate-950/80 hover:bg-rose-950 text-slate-400 hover:text-rose-400 border border-slate-800/80 opacity-0 group-hover:opacity-100 transition-all shadow-sm"
                     >
                       <Trash2 className="w-3 h-3" />
                     </button>
                   )}
                 </div>
 
-                <div className="mt-1.5 flex items-center justify-between text-[10px] font-mono text-slate-500 tabular-nums">
-                  <span>{preset.scale}% scale</span>
-                  <span>{preset.xOffset},{preset.yOffset}</span>
-                  {preset.rotation !== 0 && <span>{preset.rotation}°</span>}
+                {/* Preset Metadata & Coordinates */}
+                <div className="space-y-0.5 min-w-0 px-0.5">
+                  <span className="text-xs font-semibold text-slate-200 truncate block leading-tight">
+                    {preset.name}
+                  </span>
+                  <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 tabular-nums">
+                    <span>{preset.scale}% size</span>
+                    <span>{preset.xOffset},{preset.yOffset}{preset.rotation !== 0 ? ` · ${preset.rotation}°` : ''}</span>
+                  </div>
                 </div>
               </div>
             );
