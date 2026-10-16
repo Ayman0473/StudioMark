@@ -15,6 +15,7 @@ import {
   Check,
   BookmarkCheck,
   X,
+  AlignCenter,
 } from 'lucide-react';
 import {
   MockupProduct,
@@ -24,6 +25,7 @@ import {
   SavedPlacementPreset,
 } from '../types/mockup';
 import { PresetThumbnail } from './PresetThumbnail';
+import { loadImage } from '../utils/canvasRenderer';
 
 interface ControlsPanelProps {
   currentMockup: MockupProduct;
@@ -117,6 +119,55 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
   const [isCreatingPreset, setIsCreatingPreset] = useState(false);
   const [newPresetName, setNewPresetName] = useState('');
   const [justSavedId, setJustSavedId] = useState<string | null>(null);
+  const [justAligned, setJustAligned] = useState(false);
+
+  /**
+   * Smart Align: Uses geometric logic to center the logo relative
+   * to the product's printArea dimensions, with optical aspect ratio fitting.
+   */
+  const handleSmartAlign = async () => {
+    const { printArea } = currentMockup;
+    const printAspect = printArea.width / (printArea.height || 1);
+
+    // Default optimal coverage scale
+    let optimalScale = 75;
+
+    if (currentLogo) {
+      try {
+        const img = await loadImage(currentLogo);
+        if (img && img.naturalWidth && img.naturalHeight) {
+          const logoAspect = img.naturalWidth / img.naturalHeight;
+          if (logoAspect > printAspect) {
+            // Wide landscape logo: bound width to 80% coverage
+            optimalScale = 80;
+          } else {
+            // Tall portrait logo: calculate scale proportional to aspect ratio bounds
+            const ratio = logoAspect / printAspect;
+            optimalScale = Math.round(Math.max(45, Math.min(80, 80 * ratio)));
+          }
+        }
+      } catch (err) {
+        optimalScale = 75;
+      }
+    }
+
+    const alignedConfig: PlacementConfig = {
+      ...config,
+      xOffset: 0,
+      yOffset: 0,
+      scale: optimalScale,
+      rotation: 0,
+    };
+
+    if (onCommitConfig) {
+      onCommitConfig(alignedConfig);
+    } else {
+      onChangeConfig(alignedConfig);
+    }
+
+    setJustAligned(true);
+    setTimeout(() => setJustAligned(false), 1600);
+  };
 
   // Sync customPresets to localStorage
   const saveCustomPresets = (presets: SavedPlacementPreset[]) => {
@@ -407,8 +458,32 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
             Size &amp; Position
           </label>
 
-          {/* Undo / Redo Stack Controls */}
-          <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg p-0.5">
+          <div className="flex items-center gap-1.5">
+            {/* Smart Align Button */}
+            <button
+              onClick={handleSmartAlign}
+              title="Geometric auto-center logo relative to print area"
+              className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border transition-all active:scale-95 ${
+                justAligned
+                  ? 'bg-emerald-950/40 border-emerald-500/60 text-emerald-300 shadow-sm'
+                  : 'bg-blue-600/15 hover:bg-blue-600/25 border-blue-500/40 text-blue-300 hover:text-white'
+              }`}
+            >
+              {justAligned ? (
+                <>
+                  <Check className="w-3 h-3 text-emerald-400" />
+                  <span className="text-[11px] font-semibold">Aligned</span>
+                </>
+              ) : (
+                <>
+                  <AlignCenter className="w-3 h-3" />
+                  <span className="text-[11px] font-semibold">Smart Align</span>
+                </>
+              )}
+            </button>
+
+            {/* Undo / Redo Stack Controls */}
+            <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-lg p-0.5">
             <button
               onClick={onUndo}
               disabled={!canUndo}
@@ -445,6 +520,7 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
             </button>
           </div>
         </div>
+      </div>
 
         {/* Scale Slider */}
         <div className="space-y-1.5">
