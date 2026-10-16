@@ -1,4 +1,4 @@
-import { MockupProduct, PlacementConfig } from '../types/mockup';
+import { MockupProduct, PlacementConfig, LayerFilter } from '../types/mockup';
 
 interface RenderOptions {
   width: number;
@@ -136,8 +136,14 @@ function drawLogoOntoMockup(
   const offCtx = offCanvas.getContext('2d');
   if (!offCtx) return;
 
+  // Apply Layer Effects / Filters (Grayscale, Sepia, Invert, Vintage, High-Contrast)
+  const layerFilter = config.layerFilter || 'none';
+  const filterIntensity = config.filterIntensity !== undefined ? config.filterIntensity : 100;
+  applyLayerFilter(offCtx, layerFilter, filterIntensity);
+
   // Draw base logo into offscreen
   offCtx.drawImage(logoImg, 0, 0, offCanvas.width, offCanvas.height);
+  offCtx.filter = 'none'; // reset filter after drawing
 
   // Apply Finish Effects (embroidery, emboss, gloss)
   applyFinishEffects(offCtx, offCanvas.width, offCanvas.height, config.finish);
@@ -250,6 +256,43 @@ function renderFabricDrape(
       i * srcW, 0, srcW, img.height,
       x + i * stripW, y + wave, stripW + 0.5, h
     );
+  }
+}
+
+/**
+ * Applies 2D canvas filter effects like Grayscale, Sepia, Invert, Vintage, or High Contrast
+ */
+function applyLayerFilter(
+  ctx: CanvasRenderingContext2D,
+  filter: LayerFilter,
+  intensity: number = 100
+) {
+  if (!filter || filter === 'none' || intensity === 0) {
+    ctx.filter = 'none';
+    return;
+  }
+
+  const factor = Math.max(0, Math.min(100, intensity));
+
+  switch (filter) {
+    case 'grayscale':
+      ctx.filter = `grayscale(${factor}%)`;
+      break;
+    case 'sepia':
+      ctx.filter = `sepia(${factor}%)`;
+      break;
+    case 'invert':
+      ctx.filter = `invert(${factor}%)`;
+      break;
+    case 'vintage':
+      ctx.filter = `sepia(${factor * 0.7}%) contrast(${100 + factor * 0.2}%)`;
+      break;
+    case 'high-contrast':
+      ctx.filter = `contrast(${100 + factor}%)`;
+      break;
+    default:
+      ctx.filter = 'none';
+      break;
   }
 }
 

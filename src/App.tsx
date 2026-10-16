@@ -47,6 +47,8 @@ export default function App() {
     selectedColor: 'transparent',
     curvatureIntensity: 1.0,
     shadowIntensity: 0.5,
+    layerFilter: 'none',
+    filterIntensity: 100,
   });
 
   const handleSelectMockup = (mockup: MockupProduct) => {

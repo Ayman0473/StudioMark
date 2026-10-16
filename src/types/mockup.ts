@@ -31,6 +31,8 @@ export interface MockupProduct {
   defaultFinish: ProductFinish;
 }
 
+export type LayerFilter = 'none' | 'sepia' | 'grayscale' | 'invert' | 'vintage' | 'high-contrast';
+
 export interface PlacementConfig {
   xOffset: number; // -50 to 50 (%)
   yOffset: number; // -50 to 50 (%)
@@ -42,6 +44,8 @@ export interface PlacementConfig {
   selectedColor?: string;
   curvatureIntensity: number; // 0 to 1.5
   shadowIntensity: number; // 0 to 1
+  layerFilter?: LayerFilter; // 'none' | 'sepia' | 'grayscale' | 'invert' | ...
+  filterIntensity?: number; // 0 to 100 (%)
 }
 
 export interface BrandLogo {
@@ -69,6 +73,8 @@ export interface SavedPlacementPreset {
   yOffset: number;
   scale: number;
   rotation: number;
+  layerFilter?: LayerFilter;
+  filterIntensity?: number;
   isBuiltIn?: boolean;
   createdAt: number;
 }

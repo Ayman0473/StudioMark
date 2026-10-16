@@ -16,6 +16,7 @@ import {
   BookmarkCheck,
   X,
   AlignCenter,
+  Wand2,
 } from 'lucide-react';
 import {
   MockupProduct,
@@ -23,6 +24,7 @@ import {
   BlendMode,
   ProductFinish,
   SavedPlacementPreset,
+  LayerFilter,
 } from '../types/mockup';
 import { PresetThumbnail } from './PresetThumbnail';
 import { loadImage } from '../utils/canvasRenderer';
@@ -189,6 +191,8 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
       yOffset: config.yOffset,
       scale: config.scale,
       rotation: config.rotation,
+      layerFilter: config.layerFilter || 'none',
+      filterIntensity: config.filterIntensity !== undefined ? config.filterIntensity : 100,
       isBuiltIn: false,
       createdAt: Date.now(),
     };
@@ -214,6 +218,8 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
       yOffset: preset.yOffset,
       scale: preset.scale,
       rotation: preset.rotation,
+      ...(preset.layerFilter ? { layerFilter: preset.layerFilter } : {}),
+      ...(preset.filterIntensity !== undefined ? { filterIntensity: preset.filterIntensity } : {}),
     };
     if (onCommitConfig) {
       onCommitConfig(updated);
@@ -264,6 +270,15 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
     { id: 'matte', label: 'Flat Matte' },
     { id: 'gloss', label: 'Specular Gloss' },
     { id: 'embroidery', label: 'Embroidery' },
+  ];
+
+  const layerFilters: { id: LayerFilter; label: string; desc: string }[] = [
+    { id: 'none', label: 'Original', desc: 'No filter' },
+    { id: 'sepia', label: 'Sepia', desc: 'Warm vintage' },
+    { id: 'grayscale', label: 'Grayscale', desc: 'Monochrome' },
+    { id: 'invert', label: 'Invert', desc: 'Negative ink' },
+    { id: 'vintage', label: 'Vintage', desc: 'Aged paper' },
+    { id: 'high-contrast', label: 'High Contrast', desc: 'Vivid punch' },
   ];
 
   const allPresets = [...customPresets, ...DEFAULT_PRESETS];
@@ -617,6 +632,72 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
             </button>
           </div>
         </div>
+      </div>
+
+      {/* Layer Effects (Filters: Sepia, Grayscale, Invert, Vintage, High Contrast) */}
+      <div className="space-y-4 pt-2 border-t border-slate-800/80">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+            <Wand2 className="w-3.5 h-3.5 text-blue-400" />
+            Layer Effects
+          </label>
+          {config.layerFilter && config.layerFilter !== 'none' && (
+            <button
+              onClick={() => update({ layerFilter: 'none', filterIntensity: 100 }, true)}
+              className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 transition-colors"
+              title="Reset effect to Original"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Reset
+            </button>
+          )}
+        </div>
+
+        {/* Filter Buttons Grid */}
+        <div className="grid grid-cols-3 gap-1.5">
+          {layerFilters.map((f) => {
+            const isSelected = (config.layerFilter || 'none') === f.id;
+            return (
+              <button
+                key={f.id}
+                onClick={() => update({ layerFilter: f.id }, true)}
+                className={`px-2 py-2 rounded-lg text-xs font-medium text-left transition-all border flex flex-col justify-between ${
+                  isSelected
+                    ? 'bg-blue-600/20 border-blue-500 text-blue-300 ring-1 ring-blue-500/30'
+                    : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <span className="font-semibold truncate">{f.label}</span>
+                  {isSelected && <Check className="w-3 h-3 text-blue-400 shrink-0" />}
+                </div>
+                <span className="text-[10px] text-slate-500 mt-0.5 leading-tight truncate">{f.desc}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Filter Strength / Intensity Slider */}
+        {config.layerFilter && config.layerFilter !== 'none' && (
+          <div className="space-y-1.5 pt-1">
+            <div className="flex justify-between text-xs text-slate-300">
+              <span>Effect Strength</span>
+              <span className="tabular-nums font-mono text-slate-400">
+                {config.filterIntensity !== undefined ? config.filterIntensity : 100}%
+              </span>
+            </div>
+            <input
+              type="range"
+              min={10}
+              max={100}
+              value={config.filterIntensity !== undefined ? config.filterIntensity : 100}
+              onPointerDown={handlePointerDown}
+              onPointerUp={handlePointerUp}
+              onChange={(e) => update({ filterIntensity: Number(e.target.value) })}
+              className="w-full h-1.5 bg-slate-800 rounded-lg cursor-pointer"
+            />
+          </div>
+        )}
       </div>
 
       {/* Surface Physics & Curvature */}

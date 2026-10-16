@@ -41,6 +41,8 @@ export const PresetThumbnail: React.FC<PresetThumbnailProps> = ({
           selectedColor: preset.selectedColor || 'transparent',
           curvatureIntensity: 1.0,
           shadowIntensity: 0.5,
+          layerFilter: (preset as any).layerFilter || 'none',
+          filterIntensity: (preset as any).filterIntensity !== undefined ? (preset as any).filterIntensity : 100,
         };
 
         // Render low-resolution 120x120 preview thumbnail

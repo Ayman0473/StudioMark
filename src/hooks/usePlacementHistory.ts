@@ -50,7 +50,9 @@ export function usePlacementHistory(
           current.blendMode === newConfig.blendMode &&
           current.finish === newConfig.finish &&
           current.selectedColor === newConfig.selectedColor &&
-          current.curvatureIntensity === newConfig.curvatureIntensity
+          current.curvatureIntensity === newConfig.curvatureIntensity &&
+          current.layerFilter === newConfig.layerFilter &&
+          current.filterIntensity === newConfig.filterIntensity
         ) {
           return prev;
         }
@@ -99,7 +101,9 @@ export function usePlacementHistory(
           startConfig.xOffset !== configToCommit.xOffset ||
           startConfig.yOffset !== configToCommit.yOffset ||
           startConfig.scale !== configToCommit.scale ||
-          startConfig.rotation !== configToCommit.rotation;
+          startConfig.rotation !== configToCommit.rotation ||
+          startConfig.layerFilter !== configToCommit.layerFilter ||
+          startConfig.filterIntensity !== configToCommit.filterIntensity;
 
         if (hasChanged) {
           // Put the start config at currentIndex, then push the finalConfig
