@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { MockupProduct, PlacementConfig } from '../types/mockup';
+import { MockupProduct, PlacementConfig, LayerFilter } from '../types/mockup';
 import { renderMockupToCanvas } from '../utils/canvasRenderer';
 
 interface PresetThumbnailProps {
@@ -11,6 +11,8 @@ interface PresetThumbnailProps {
     scale: number;
     rotation: number;
     selectedColor?: string;
+    layerFilter?: LayerFilter;
+    filterIntensity?: number;
   };
   className?: string;
 }
@@ -41,8 +43,8 @@ export const PresetThumbnail: React.FC<PresetThumbnailProps> = ({
           selectedColor: preset.selectedColor || 'transparent',
           curvatureIntensity: 1.0,
           shadowIntensity: 0.5,
-          layerFilter: (preset as any).layerFilter || 'none',
-          filterIntensity: (preset as any).filterIntensity !== undefined ? (preset as any).filterIntensity : 100,
+          layerFilter: preset.layerFilter || 'none',
+          filterIntensity: preset.filterIntensity !== undefined ? preset.filterIntensity : 100,
         };
 
         // Render low-resolution 120x120 preview thumbnail
@@ -73,7 +75,17 @@ export const PresetThumbnail: React.FC<PresetThumbnailProps> = ({
     return () => {
       isCancelled = true;
     };
-  }, [mockup, logoSrc, preset.xOffset, preset.yOffset, preset.scale, preset.rotation, preset.selectedColor]);
+  }, [
+    mockup,
+    logoSrc,
+    preset.xOffset,
+    preset.yOffset,
+    preset.scale,
+    preset.rotation,
+    preset.selectedColor,
+    preset.layerFilter,
+    preset.filterIntensity,
+  ]);
 
   return (
     <div className={`relative overflow-hidden bg-slate-950 flex items-center justify-center ${className}`}>
