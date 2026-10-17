@@ -218,6 +218,8 @@ export default function App() {
             <main className="flex-1 flex flex-col h-full overflow-hidden bg-slate-950">
               <MockupCanvas
                 mockup={currentMockup}
+                allProducts={products}
+                onSelectMockup={handleSelectMockup}
                 logoSrc={currentLogo}
                 config={config}
                 showGuides={showGuides}
