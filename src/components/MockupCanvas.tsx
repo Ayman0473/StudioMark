@@ -154,9 +154,9 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     }
   }, [renderSecondary, isSideBySide]);
 
-  // Handle direct on-canvas mouse drag to reposition logo
-  const handleMouseDown = (
-    e: React.MouseEvent<HTMLCanvasElement>,
+  // Handle direct on-canvas pointer drag to reposition logo
+  const handlePointerDown = (
+    e: React.PointerEvent<HTMLCanvasElement>,
     target: 'primary' | 'secondary'
   ) => {
     if (!logoSrc || (!isSideBySide && compareMode)) return;
@@ -167,35 +167,66 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
     setDragTarget(target);
     setDragStart({ x: e.clientX, y: e.clientY });
     setInitialOffsets({ x: config.xOffset, y: config.yOffset });
+    // Capture pointer if available
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // Ignore if not supported
+    }
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  useEffect(() => {
     if (!isDraggingLogo || !dragStart || !dragTarget) return;
 
-    const canvasElement =
-      dragTarget === 'primary' ? primaryCanvasRef.current : secondaryCanvasRef.current;
-    if (!canvasElement) return;
+    const handlePointerMove = (e: PointerEvent) => {
+      const canvasElement =
+        dragTarget === 'primary' ? primaryCanvasRef.current : secondaryCanvasRef.current;
+      if (!canvasElement) return;
 
-    const rect = canvasElement.getBoundingClientRect();
-    const deltaX = ((e.clientX - dragStart.x) / rect.width) * 100;
-    const deltaY = ((e.clientY - dragStart.y) / rect.height) * 100;
+      const rect = canvasElement.getBoundingClientRect();
+      const activeMockup = dragTarget === 'secondary' ? secondaryMockup : mockup;
+      // Exact pixel size of printable zone on screen
+      const printW = (activeMockup.printArea.width || 0.4) * rect.width;
+      const printH = (activeMockup.printArea.height || 0.4) * rect.height;
 
-    const newX = Math.max(-50, Math.min(50, initialOffsets.x + deltaX * 1.5));
-    const newY = Math.max(-50, Math.min(50, initialOffsets.y + deltaY * 1.5));
+      // 1:1 displacement in normalized percentage
+      const deltaX = ((e.clientX - dragStart.x) / (printW || 1)) * 100;
+      const deltaY = ((e.clientY - dragStart.y) / (printH || 1)) * 100;
 
-    onUpdateOffset(Math.round(newX), Math.round(newY));
-  };
+      const newX = Math.max(-50, Math.min(50, initialOffsets.x + deltaX));
+      const newY = Math.max(-50, Math.min(50, initialOffsets.y + deltaY));
 
-  const handleMouseUp = () => {
-    if (isDraggingLogo) {
+      onUpdateOffset(Math.round(newX), Math.round(newY));
+    };
+
+    const handlePointerUp = () => {
       setIsDraggingLogo(false);
       setDragTarget(null);
       setDragStart(null);
       if (onEndInteraction) {
         onEndInteraction();
       }
-    }
-  };
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerUp);
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
+    };
+  }, [
+    isDraggingLogo,
+    dragStart,
+    dragTarget,
+    initialOffsets,
+    mockup,
+    secondaryMockup,
+    onUpdateOffset,
+    onEndInteraction,
+  ]);
 
   // Swap primary and secondary products
   const handleSwapProducts = () => {
@@ -366,9 +397,6 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
       <div
         ref={containerRef}
         className="flex-1 flex items-center justify-center p-4 sm:p-6 overflow-auto relative bg-[#08090d]"
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
       >
         {/* SIDE-BY-SIDE COMPARISON VIEW */}
         {isSideBySide ? (
@@ -401,7 +429,8 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
               <div className="relative aspect-square bg-[#0c0e14] flex items-center justify-center p-2 overflow-hidden">
                 <canvas
                   ref={primaryCanvasRef}
-                  onMouseDown={(e) => handleMouseDown(e, 'primary')}
+                  onPointerDown={(e) => handlePointerDown(e, 'primary')}
+                  style={{ touchAction: 'none' }}
                   className={`w-full h-full object-contain block ${
                     logoSrc ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
                   }`}
@@ -471,7 +500,8 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
               <div className="relative aspect-square bg-[#0c0e14] flex items-center justify-center p-2 overflow-hidden">
                 <canvas
                   ref={secondaryCanvasRef}
-                  onMouseDown={(e) => handleMouseDown(e, 'secondary')}
+                  onPointerDown={(e) => handlePointerDown(e, 'secondary')}
+                  style={{ touchAction: 'none' }}
                   className={`w-full h-full object-contain block ${
                     logoSrc ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
                   }`}
@@ -522,7 +552,8 @@ export const MockupCanvas: React.FC<MockupCanvasProps> = ({
           >
             <canvas
               ref={primaryCanvasRef}
-              onMouseDown={(e) => handleMouseDown(e, 'primary')}
+              onPointerDown={(e) => handlePointerDown(e, 'primary')}
+              style={{ touchAction: 'none' }}
               className={`max-w-[560px] max-h-[560px] w-full h-auto block aspect-square ${
                 logoSrc && !compareMode ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'
               }`}

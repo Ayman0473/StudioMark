@@ -137,8 +137,10 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
     if (currentLogo) {
       try {
         const img = await loadImage(currentLogo);
-        if (img && img.naturalWidth && img.naturalHeight) {
-          const logoAspect = img.naturalWidth / img.naturalHeight;
+        const imgW = img.naturalWidth || img.width || 0;
+        const imgH = img.naturalHeight || img.height || 0;
+        if (imgW > 0 && imgH > 0) {
+          const logoAspect = imgW / imgH;
           if (logoAspect > printAspect) {
             // Wide landscape logo: bound width to 80% coverage
             optimalScale = 80;
@@ -218,8 +220,8 @@ export const ControlsPanel: React.FC<ControlsPanelProps> = ({
       yOffset: preset.yOffset,
       scale: preset.scale,
       rotation: preset.rotation,
-      ...(preset.layerFilter ? { layerFilter: preset.layerFilter } : {}),
-      ...(preset.filterIntensity !== undefined ? { filterIntensity: preset.filterIntensity } : {}),
+      layerFilter: preset.layerFilter || 'none',
+      filterIntensity: preset.filterIntensity !== undefined ? preset.filterIntensity : 100,
     };
     if (onCommitConfig) {
       onCommitConfig(updated);

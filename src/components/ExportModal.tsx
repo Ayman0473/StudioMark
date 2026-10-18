@@ -17,6 +17,7 @@ interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentMockup: MockupProduct;
+  allProducts?: MockupProduct[];
   logoSrc: string | null;
   config: PlacementConfig;
 }
@@ -25,16 +26,18 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   isOpen,
   onClose,
   currentMockup,
+  allProducts,
   logoSrc,
   config,
 }) => {
+  const availableProducts = allProducts && allProducts.length > 0 ? allProducts : MOCKUP_PRODUCTS;
   const [resolution, setResolution] = useState<ExportResolution>('2K');
   const [format, setFormat] = useState<ExportFormat>('png');
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState<string>('');
   const [batchMode, setBatchMode] = useState(false);
   const [selectedMockupsForBatch, setSelectedMockupsForBatch] = useState<string[]>(
-    MOCKUP_PRODUCTS.map((m) => m.id)
+    availableProducts.map((m) => m.id)
   );
 
   if (!isOpen) return null;
@@ -73,7 +76,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const handleExportBatch = async () => {
     setIsExporting(true);
     try {
-      const targets = MOCKUP_PRODUCTS.filter((m) => selectedMockupsForBatch.includes(m.id));
+      const targets = availableProducts.filter((m) => selectedMockupsForBatch.includes(m.id));
       for (let i = 0; i < targets.length; i++) {
         const item = targets[i];
         setExportProgress(`Exporting ${i + 1}/${targets.length}: ${item.name} (${resolution})...`);
@@ -148,7 +151,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 batchMode ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              All Products Batch ({MOCKUP_PRODUCTS.length})
+              All Products Batch ({availableProducts.length})
             </button>
           </div>
 
@@ -194,7 +197,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 Select Products to Include
               </label>
               <div className="grid grid-cols-2 gap-2 text-xs">
-                {MOCKUP_PRODUCTS.map((prod) => {
+                {availableProducts.map((prod) => {
                   const isChecked = selectedMockupsForBatch.includes(prod.id);
                   return (
                     <button

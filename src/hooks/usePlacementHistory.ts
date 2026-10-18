@@ -102,6 +102,11 @@ export function usePlacementHistory(
           startConfig.yOffset !== configToCommit.yOffset ||
           startConfig.scale !== configToCommit.scale ||
           startConfig.rotation !== configToCommit.rotation ||
+          startConfig.opacity !== configToCommit.opacity ||
+          startConfig.blendMode !== configToCommit.blendMode ||
+          startConfig.finish !== configToCommit.finish ||
+          startConfig.selectedColor !== configToCommit.selectedColor ||
+          startConfig.curvatureIntensity !== configToCommit.curvatureIntensity ||
           startConfig.layerFilter !== configToCommit.layerFilter ||
           startConfig.filterIntensity !== configToCommit.filterIntensity;
 
@@ -115,7 +120,10 @@ export function usePlacementHistory(
             }
             return next;
           });
-          setCurrentIndex((prev) => Math.min(prev + 1, maxHistory - 1));
+          setCurrentIndex((prev) => {
+            const nextLength = Math.min(prev + 2, maxHistory);
+            return nextLength - 1;
+          });
         }
       } else {
         // If no interaction was formally begun, push directly if different

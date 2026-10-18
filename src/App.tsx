@@ -88,7 +88,7 @@ export default function App() {
     if (!isAdjustment) {
       setRawLogo(logoSrc);
     }
-    if (name) setLogoName(name);
+    setLogoName(name || (logoSrc ? 'Custom Logo' : 'No Logo'));
   };
 
   // Callback from AI Studio when an image is saved as custom mockup
@@ -269,6 +269,7 @@ export default function App() {
           <BatchExportView
             currentLogo={currentLogo}
             config={config}
+            allProducts={products}
             onSelectMockup={(m) => {
               setCurrentMockup(m);
               setActiveTab('mockups');
@@ -282,6 +283,7 @@ export default function App() {
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         currentMockup={currentMockup}
+        allProducts={products}
         logoSrc={currentLogo}
         config={config}
       />

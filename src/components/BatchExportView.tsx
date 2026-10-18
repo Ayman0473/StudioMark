@@ -7,14 +7,17 @@ import { exportHighResolution, downloadDataUrl } from '../utils/canvasRenderer';
 interface BatchExportViewProps {
   currentLogo: string | null;
   config: PlacementConfig;
+  allProducts?: MockupProduct[];
   onSelectMockup: (mockup: MockupProduct) => void;
 }
 
 export const BatchExportView: React.FC<BatchExportViewProps> = ({
   currentLogo,
   config,
+  allProducts,
   onSelectMockup,
 }) => {
+  const availableProducts = allProducts && allProducts.length > 0 ? allProducts : MOCKUP_PRODUCTS;
   const [resolution, setResolution] = useState<ExportResolution>('2K');
   const [previews, setPreviews] = useState<Record<string, string>>({});
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
@@ -27,7 +30,7 @@ export const BatchExportView: React.FC<BatchExportViewProps> = ({
 
     const generatePreviews = async () => {
       const newPreviews: Record<string, string> = {};
-      for (const prod of MOCKUP_PRODUCTS) {
+      for (const prod of availableProducts) {
         if (isCancelled) return;
         try {
           const { dataUrl } = await exportHighResolution(
@@ -75,9 +78,9 @@ export const BatchExportView: React.FC<BatchExportViewProps> = ({
   const handleDownloadAll = async () => {
     setIsExportingAll(true);
     try {
-      for (let i = 0; i < MOCKUP_PRODUCTS.length; i++) {
-        const prod = MOCKUP_PRODUCTS[i];
-        setExportStatus(`Exporting ${i + 1}/${MOCKUP_PRODUCTS.length}: ${prod.name} (${resolution})...`);
+      for (let i = 0; i < availableProducts.length; i++) {
+        const prod = availableProducts[i];
+        setExportStatus(`Exporting ${i + 1}/${availableProducts.length}: ${prod.name} (${resolution})...`);
         const { dataUrl, filename } = await exportHighResolution(
           prod,
           currentLogo,
@@ -151,9 +154,9 @@ export const BatchExportView: React.FC<BatchExportViewProps> = ({
           </div>
         </div>
 
-        {/* 4-Item Grid */}
+        {/* Product Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {MOCKUP_PRODUCTS.map((prod) => {
+          {availableProducts.map((prod) => {
             const previewUrl = previews[prod.id] || prod.imageSrc;
             const isLoading = loadingMap[prod.id] || false;
 

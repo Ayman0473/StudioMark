@@ -21,7 +21,11 @@ export function loadImage(src: string): Promise<HTMLImageElement> {
 
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    // Only set crossOrigin on remote HTTP/HTTPS URLs.
+    // Setting crossOrigin on data: or blob: URIs causes Safari/Chrome to taint canvas!
+    if (src.startsWith('http://') || src.startsWith('https://')) {
+      img.crossOrigin = 'anonymous';
+    }
     img.referrerPolicy = 'no-referrer';
     img.onload = () => {
       imageCache.set(src, img);
@@ -213,21 +217,24 @@ function renderCylindricalWrap(
 
     const destX = x + (i * sliceW) + (Math.sin(angle) * w * 0.12 * curvature);
     const destY = y + verticalOffset;
-    const destH = h - verticalOffset * 0.5;
+    const destH = Math.max(1, h - verticalOffset * 0.5);
+    const destW = Math.max(0.5, compW);
 
-    // Draw slice
-    ctx.drawImage(
-      img,
-      i * srcSliceW, 0, srcSliceW, img.height,
-      destX, destY, Math.max(1, compW), destH
-    );
+    // Draw slice safely
+    if (srcSliceW > 0 && img.height > 0) {
+      ctx.drawImage(
+        img,
+        i * srcSliceW, 0, Math.max(1, srcSliceW), img.height,
+        destX, destY, destW, destH
+      );
+    }
 
     // Subtle edge shading gradient: sides are slightly darker due to cylinder curvature
     const edgeDarkness = Math.pow(Math.abs(normX), 2) * 0.28 * curvature;
     if (edgeDarkness > 0.02) {
       ctx.save();
       ctx.fillStyle = `rgba(0, 0, 0, ${edgeDarkness})`;
-      ctx.fillRect(destX, destY, Math.max(1, compW), destH);
+      ctx.fillRect(destX, destY, destW, destH);
       ctx.restore();
     }
   }
@@ -246,15 +253,16 @@ function renderFabricDrape(
 ) {
   // Slices with subtle sine wave offset simulating fabric wave
   const strips = 32;
-  const stripW = w / strips;
-  const srcW = img.width / strips;
+  const stripW = Math.max(0.5, w / strips);
+  const srcW = Math.max(1, img.width / strips);
+  const safeH = Math.max(1, h);
 
   for (let i = 0; i < strips; i++) {
     const wave = Math.sin((i / strips) * Math.PI * 3.5) * 1.5;
     ctx.drawImage(
       img,
       i * srcW, 0, srcW, img.height,
-      x + i * stripW, y + wave, stripW + 0.5, h
+      x + i * stripW, y + wave, stripW + 0.5, safeH
     );
   }
 }
