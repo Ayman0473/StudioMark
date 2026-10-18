@@ -167,4 +167,22 @@ export const SAMPLE_LOGOS: BrandLogo[] = [
       </svg>
     `)}`,
   },
+  {
+    id: 'sample-white-box',
+    name: 'Heritage Co. (White Box)',
+    isSample: true,
+    src: `data:image/svg+xml;utf8,${encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+        <rect width="400" height="400" fill="#ffffff" stroke="#e2e8f0" stroke-width="4"/>
+        <g transform="translate(200, 160)">
+          <polygon points="0,-85 75,45 -75,45" fill="#1e293b"/>
+          <circle cx="0" cy="5" r="28" fill="#ffffff"/>
+          <polygon points="0,-15 15,15 -15,15" fill="#e11d48"/>
+        </g>
+        <text x="200" y="285" font-family="'Outfit', sans-serif" font-weight="800" font-size="28" letter-spacing="8" fill="#1e293b" text-anchor="middle">HERITAGE</text>
+        <text x="200" y="315" font-family="'Plus Jakarta Sans', sans-serif" font-weight="600" font-size="12" letter-spacing="5" fill="#64748b" text-anchor="middle">SUPPLY CO.</text>
+      </svg>
+    `)}`,
+  },
 ];
+

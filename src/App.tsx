@@ -19,6 +19,7 @@ export default function App() {
 
   // Default to sample Apex brand logo so user sees immediate live mockup preview
   const [currentLogo, setCurrentLogo] = useState<string | null>(SAMPLE_LOGOS[0].src);
+  const [rawLogo, setRawLogo] = useState<string | null>(SAMPLE_LOGOS[0].src);
   const [logoName, setLogoName] = useState<string>('Apex Studio Emblem');
 
   const [showGuides, setShowGuides] = useState<boolean>(false);
@@ -78,9 +79,16 @@ export default function App() {
     updateLive({ ...config, xOffset, yOffset });
   };
 
-  const handleSelectLogo = (logoSrc: string | null, name: string = 'Custom Logo') => {
+  const handleSelectLogo = (
+    logoSrc: string | null,
+    name: string = 'Custom Logo',
+    isAdjustment: boolean = false
+  ) => {
     setCurrentLogo(logoSrc);
-    setLogoName(name);
+    if (!isAdjustment) {
+      setRawLogo(logoSrc);
+    }
+    if (name) setLogoName(name);
   };
 
   // Callback from AI Studio when an image is saved as custom mockup
@@ -191,6 +199,7 @@ export default function App() {
               <div className="flex-1 overflow-y-auto p-4 space-y-6">
                 <LogoUploader
                   currentLogo={currentLogo}
+                  rawLogo={rawLogo}
                   onSelectLogo={handleSelectLogo}
                   logoName={logoName}
                 />
