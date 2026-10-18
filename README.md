@@ -145,3 +145,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 Contributions, bug reports, and feature requests are welcome!  
 Feel free to open an issue or submit a pull request.
+
+---
+
+## 📄 License
+
+This project is open-source and licensed under the [MIT License](LICENSE).

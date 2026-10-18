@@ -2,6 +2,7 @@
   "name": "studiomark",
   "version": "1.0.0",
   "description": "High-Resolution Product Logo Mockup Generator & AI Scene Studio with real-time warp physics, side-by-side comparison, and batch export.",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
